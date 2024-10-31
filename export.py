@@ -310,7 +310,8 @@ class EngineBuilder:
                         ImageBatcher(calib_input, calib_shape, calib_dtype, max_num_images=calib_num_images,
                                      exact_batches=True))
         
-        if dlacore:
+        if dlacore is not None:
+            print(f"Setting DLA: {dlacore}")
             self.config.default_device_type = trt.DeviceType.DLA
             self.config.DLA_core = int(dlacore)
             self.config.set_flag(trt.BuilderFlag.GPU_FALLBACK)
