@@ -270,7 +270,7 @@ class EngineBuilder:
 
 
     def create_engine(self, engine_path, precision, calib_input=None, calib_cache=None, calib_num_images=5000,
-                      calib_batch_size=8):
+                      calib_batch_size=8, dlacore=None):
         """
         Build the TensorRT engine and serialize it to disk.
         :param engine_path: The path where to serialize the engine to.
@@ -309,6 +309,11 @@ class EngineBuilder:
                     self.config.int8_calibrator.set_image_batcher(
                         ImageBatcher(calib_input, calib_shape, calib_dtype, max_num_images=calib_num_images,
                                      exact_batches=True))
+        
+        if dlacore:
+            self.config.default_device_type = trt.DeviceType.DLA
+            self.config.DLA_core = int(dlacore)
+            self.config.set_flag(trt.BuilderFlag.GPU_FALLBACK)
 
         # with self.builder.build_engine(self.network, self.config) as engine, open(engine_path, "wb") as f:
         with self.builder.build_serialized_network(self.network, self.config) as engine, open(engine_path, "wb") as f:
@@ -319,7 +324,7 @@ def main(args):
     builder = EngineBuilder(args.verbose, args.workspace)
     builder.create_network(args.onnx, args.end2end, args.conf_thres, args.iou_thres, args.max_det, v8=args.v8, v10=args.v10)
     builder.create_engine(args.engine, args.precision, args.calib_input, args.calib_cache, args.calib_num_images,
-                          args.calib_batch_size)
+                          args.calib_batch_size, args.dlacore)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -349,6 +354,7 @@ if __name__ == "__main__":
                         help="use yolov8/9 model, default: False")
     parser.add_argument("--v10", default=False, action="store_true",
                         help="use yolov10 model, default: False")
+    parser.add_argument("--dlacore", default=None, help="Which DLA core to use.")
     args = parser.parse_args()
     print(args)
     if not all([args.onnx, args.engine]):
@@ -361,5 +367,3 @@ if __name__ == "__main__":
         sys.exit(1)
     
     main(args)
-
-
