@@ -139,7 +139,9 @@ class BaseEngine(object):
         img, ratio, dwdh = letterbox(origin_img, self.imgsz)
         data = self.infer(img)
         if end2end:
+            print("Using end2end")
             num, final_boxes, final_scores, final_cls_inds  = data
+            print(num)
             # final_boxes, final_scores, final_cls_inds  = data
             dwdh = np.asarray(dwdh * 2, dtype=np.float32)
             final_boxes -= dwdh
@@ -147,6 +149,7 @@ class BaseEngine(object):
             final_scores = np.reshape(final_scores, (-1, 1))
             final_cls_inds = np.reshape(final_cls_inds, (-1, 1))
             dets = np.concatenate([np.array(final_boxes)[:int(num[0])], np.array(final_scores)[:int(num[0])], np.array(final_cls_inds)[:int(num[0])]], axis=-1)
+            print(dets)
         else:
             predictions = np.reshape(data, (1, -1, int(5+self.n_classes)))[0]
             dets = self.postprocess(predictions,ratio)
@@ -255,7 +258,7 @@ def preproc(image, input_size, mean, std, swap=(2, 0, 1)):
     # padded_img = padded_img[:, :, ::-1]
     # padded_img /= 255.0
     padded_img = padded_img[:, :, ::-1]
-    padded_img /= 255.0
+    # padded_img /= 255.0
     if mean is not None:
         padded_img -= mean
     if std is not None:

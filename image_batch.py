@@ -27,7 +27,7 @@ class ImageBatcher:
     Creates batches of pre-processed images.
     """
 
-    def __init__(self, input, shape, dtype, max_num_images=None, exact_batches=False, preprocessor="fixed_shape_resizer"):
+    def __init__(self, input, shape, dtype, max_num_images=None, exact_batches=False, preprocessor="keep_aspect_ratio_resizer"):
         """
         :param input: The input directory to read images from.
         :param shape: The tensor shape of the batch to prepare, either in NCHW or NHWC format.
@@ -151,7 +151,8 @@ class ImageBatcher:
             sys.exit(1)
         if self.format == "NCHW":
             image = np.transpose(image, (2, 0, 1))
-        return image/255., scale
+        # return image/255., scale
+        return image, scale
 
     def get_batch(self):
         """
